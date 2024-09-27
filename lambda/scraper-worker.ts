@@ -110,6 +110,7 @@ export const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
           .eq("id", scraperUrlId)
           .throwOnError();
 
+        // Surface the error
         throw error;
       }
     } catch (error) {

@@ -53,17 +53,29 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
         };
       }
 
-      const { jsonResult } = await processUrl({
-        url,
-        prompt,
-      });
+      try {
+        const { jsonResult } = await processUrl({
+          url,
+          prompt,
+        });
 
-      return {
-        statusCode: 200,
-        body: JSON.stringify({
-          jsonResult,
-        }),
-      };
+        return {
+          statusCode: 200,
+          body: JSON.stringify({
+            jsonResult,
+          }),
+        };
+      } catch (error) {
+        // Re credit the API credit on error
+        await supabase
+          .rpc("add_api_credit", {
+            org_id: organizationId,
+          })
+          .throwOnError();
+
+        // Surface the error
+        throw error;
+      }
     } catch (error) {
       console.error("Error processing API request:", error);
 
