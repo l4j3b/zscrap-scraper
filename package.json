@@ -2,10 +2,10 @@
   "name": "zscrap-cdk",
   "version": "0.1.0",
   "bin": {
-    "zscrap-cdk": "bin/zscrap-cdk.js"
+    "zscrap-cdk": "dist/bin/zscrap-cdk.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
