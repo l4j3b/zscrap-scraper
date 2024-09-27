@@ -68,50 +68,6 @@ export interface Database {
         };
         Relationships: [];
       };
-      pins: {
-        Row: {
-          created_at: string;
-          data: Json | null;
-          id: string;
-          image_url: string | null;
-          note: string | null;
-          price: number | null;
-          title: string;
-          url: string;
-          user_id: string;
-        };
-        Insert: {
-          created_at?: string;
-          data?: Json | null;
-          id?: string;
-          image_url?: string | null;
-          note?: string | null;
-          price?: number | null;
-          title: string;
-          url: string;
-          user_id: string;
-        };
-        Update: {
-          created_at?: string;
-          data?: Json | null;
-          id?: string;
-          image_url?: string | null;
-          note?: string | null;
-          price?: number | null;
-          title?: string;
-          url?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "pins_user_id_users_id_fk";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          }
-        ];
-      };
       scraper_urls: {
         Row: {
           created_at: string;
@@ -128,6 +84,7 @@ export interface Database {
           title: string | null;
           updated_at: string;
           url: string;
+          usage_info: Json | null;
         };
         Insert: {
           created_at?: string;
@@ -144,6 +101,7 @@ export interface Database {
           title?: string | null;
           updated_at?: string;
           url: string;
+          usage_info?: Json | null;
         };
         Update: {
           created_at?: string;
@@ -160,6 +118,7 @@ export interface Database {
           title?: string | null;
           updated_at?: string;
           url?: string;
+          usage_info?: Json | null;
         };
         Relationships: [
           {

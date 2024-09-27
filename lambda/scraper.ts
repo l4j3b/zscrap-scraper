@@ -132,7 +132,8 @@ export const handler: SQSHandler = Sentry.wrapHandler(
           await supabase
             .from("scraper_urls")
             .update({
-              result: gptResponse,
+              result: gptResponse.data,
+              usageInfo: gptResponse.usageInfo,
               status: "completed",
               jsonResult,
               suggestion,

@@ -41,10 +41,10 @@ ${userPrompt}
   });
 
   // Step 4: Parse the response to extract the JSON result
-  const jsonResultMatch = gptResponse.match(
+  const jsonResultMatch = gptResponse.data.match(
     /###START_JSON###([\s\S]*?)###END_JSON###/
   );
-  const suggestionMatch = gptResponse.match(
+  const suggestionMatch = gptResponse.data.match(
     /###START_SUGGESTION###([\s\S]*?)###END_SUGGESTION###/
   );
 
