@@ -13,6 +13,20 @@ export class ZscrapCdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Check if required environment variables are set
+    if (
+      !process.env.DEBUG ||
+      !process.env.SUPABASE_URL ||
+      !process.env.SUPABASE_ANON_KEY ||
+      !process.env.ZENROWS_API_KEY ||
+      !process.env.OPENAI_API_KEY ||
+      !process.env.SENTRY_DSN ||
+      !process.env.SENTRY_TRACES_SAMPLE_RATE ||
+      !process.env.NODE_OPTIONS
+    ) {
+      throw new Error("Missing required environment variables");
+    }
+
     // Create an SQS FIFO queue
     const zscrapQueue = new sqs.Queue(this, "ZscrapQueue", {
       queueName: "ZscrapQueue.fifo",
@@ -33,8 +47,14 @@ export class ZscrapCdkStack extends cdk.Stack {
         timeout: cdk.Duration.seconds(30),
         // memorySize: 1024,
         environment: {
-          SUPABASE_URL: process.env.SUPABASE_URL || "",
-          SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || "",
+          DEBUG: process.env.DEBUG,
+          SUPABASE_URL: process.env.SUPABASE_URL,
+          SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+          ZENROWS_API_KEY: process.env.ZENROWS_API_KEY,
+          OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+          SENTRY_DSN: process.env.SENTRY_DSN,
+          SENTRY_TRACES_SAMPLE_RATE: process.env.SENTRY_TRACES_SAMPLE_RATE,
+          NODE_OPTIONS: process.env.NODE_OPTIONS,
         },
         // bundling: {
         //   nodeModules: ["@supabase/supabase-js"],

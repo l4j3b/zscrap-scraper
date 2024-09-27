@@ -22,6 +22,8 @@
     "typescript": "~5.6.2"
   },
   "dependencies": {
+    "@sentry/aws-serverless": "^8.32.0",
+    "@sentry/profiling-node": "^8.32.0",
     "@supabase/supabase-js": "^2.45.4",
     "aws-cdk-lib": "2.158.0",
     "aws-lambda": "^1.0.7",
