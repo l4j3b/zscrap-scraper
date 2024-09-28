@@ -98,8 +98,6 @@ const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
       }
     } catch (error) {
       console.error("Error processing message:", error);
-
-      // Log into Sentry
       Sentry.captureException(error);
     }
   }

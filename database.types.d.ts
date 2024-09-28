@@ -44,7 +44,6 @@ export interface Database {
       organizations: {
         Row: {
           api_credits: number;
-          api_key: string | null;
           created_at: string;
           id: string;
           name: string;
@@ -52,7 +51,6 @@ export interface Database {
         };
         Insert: {
           api_credits?: number;
-          api_key?: string | null;
           created_at?: string;
           id?: string;
           name: string;
@@ -60,7 +58,6 @@ export interface Database {
         };
         Update: {
           api_credits?: number;
-          api_key?: string | null;
           created_at?: string;
           id?: string;
           name?: string;

@@ -18,7 +18,10 @@ export async function processUrl({
     console.log("DEBUG: Skipping scraping and AI processing");
 
     return {
-      message: "Debug mode: Skipped processing.",
+      result: null,
+      usageInfo: null,
+      jsonResult: {},
+      suggestion: null,
     };
   }
 
@@ -40,7 +43,11 @@ export async function processUrl({
     ]),
   });
 
-  const data: { html: string } = await scraper.json();
+  const data: { html: string; status: string } = await scraper.json();
+
+  if (data.status !== "200") {
+    throw new Error(`Scraper returned non-200 status: ${JSON.stringify(data)}`);
+  }
 
   if (!data.html) {
     throw new Error("Scraper returned no HTML.");
