@@ -17,7 +17,7 @@ export class ZscrapCdkStack extends cdk.Stack {
     // Check if required environment variables are set
     if (
       !process.env.API_KEY_SECRET ||
-      !process.env.DEBUG ||
+      !process.env.TEST_MODE ||
       !process.env.SUPABASE_URL ||
       !process.env.SUPABASE_ANON_KEY ||
       !process.env.ZENROWS_API_KEY ||
@@ -30,7 +30,7 @@ export class ZscrapCdkStack extends cdk.Stack {
     }
 
     const environment = {
-      DEBUG: process.env.DEBUG,
+      TEST_MODE: process.env.TEST_MODE,
       SUPABASE_URL: process.env.SUPABASE_URL,
       SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
       ZENROWS_API_KEY: process.env.ZENROWS_API_KEY,

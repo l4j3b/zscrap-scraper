@@ -5,7 +5,7 @@ import { scrapGPT } from "./scrap-gpt";
 
 const zenrowsApiKey = process.env.ZENROWS_API_KEY!;
 const openaiApiKey = process.env.OPENAI_API_KEY!;
-const debug = process.env.DEBUG === "true";
+const testMode = process.env.TEST_MODE === "true";
 
 export async function processUrl({
   url,
@@ -14,13 +14,13 @@ export async function processUrl({
   url: string;
   prompt: string;
 }) {
-  if (debug) {
-    console.log("DEBUG: Skipping scraping and AI processing");
+  if (testMode) {
+    console.log("TEST_MODE: Skipping scraping and AI processing");
 
     return {
-      result: null,
+      result: "TEST MODE",
       usageInfo: null,
-      jsonResult: {},
+      jsonResult: { result: "TEST_MODE" },
       suggestion: null,
     };
   }
