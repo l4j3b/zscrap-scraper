@@ -1,11 +1,10 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
-import { createClient } from "@supabase/supabase-js";
 import * as Sentry from "@sentry/aws-serverless";
 import { createHash } from "node:crypto";
 
 import { processUrl } from "./lib/process-url";
-import { Database } from "../database.types";
 import { deductApiCredit } from "./lib/deduct-api-credit";
+import { createSupabaseClient } from "./lib/create-supabase-client";
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_ANON_KEY!;
@@ -14,7 +13,7 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error("Missing required environment variables");
 }
 
-const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
 
 type RequestBody = {
   url: string | null;

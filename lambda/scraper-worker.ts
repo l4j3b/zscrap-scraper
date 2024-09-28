@@ -1,11 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
 import * as Sentry from "@sentry/aws-serverless";
-
 import { SQSHandler } from "aws-lambda";
 
-import { Database } from "../database.types";
 import { processUrl } from "./lib/process-url";
 import { deductApiCredit } from "./lib/deduct-api-credit";
+import { createSupabaseClient } from "./lib/create-supabase-client";
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
@@ -16,7 +14,7 @@ if (!supabaseUrl || !supabaseKey || !zenrowsApiKey || !openaiApiKey) {
   throw new Error("Missing required environment variables");
 }
 
-const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
 
 type MessageBody = {
   scraperUrlId: string | null;
