@@ -29,7 +29,28 @@ function hashApiKey(apiKey: string, secret: string) {
 export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
   async (event) => {
     try {
-      const apiKey = event.headers["Authorization"]?.replace("Bearer ", "");
+      const authorizationHeader =
+        event.headers["Authorization"] || event.headers["authorization"];
+
+      if (!authorizationHeader) {
+        return {
+          statusCode: 401,
+          body: JSON.stringify({ error: "Missing API key." }),
+        };
+      }
+
+      const match = authorizationHeader.match(/^Bearer\s+(.+)$/i);
+
+      if (!match) {
+        return {
+          statusCode: 401,
+          body: JSON.stringify({
+            error: "Invalid Authorization header format.",
+          }),
+        };
+      }
+
+      const apiKey = match[1].trim();
 
       if (!apiKey) {
         return {
@@ -38,7 +59,18 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
         };
       }
 
-      const { url, prompt } = JSON.parse(event.body || "{}") as RequestBody;
+      let body: RequestBody;
+
+      try {
+        body = JSON.parse(event.body || "{}");
+      } catch (error) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: "Invalid JSON body." }),
+        };
+      }
+
+      const { url, prompt } = body;
 
       if (!url || !prompt) {
         return {
@@ -68,7 +100,7 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
       // Check the API key
       const { data: apiKeyData, error } = await supabase
         .from("api_keys")
-        .select("*")
+        .select("organization_id")
         .eq("api_key", hashApiKey(apiKey, apiKeySecret))
         .single();
 
