@@ -1,6 +1,6 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import * as Sentry from "@sentry/aws-serverless";
-import { createHash } from "node:crypto";
+import { createHmac } from "node:crypto";
 import * as urlValidator from "valid-url";
 
 import { processUrl } from "./lib/process-url";
@@ -9,8 +9,9 @@ import { createSupabaseClient } from "./lib/create-supabase-client";
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_ANON_KEY!;
+const apiKeySecret = process.env.API_KEY_SECRET!;
 
-if (!supabaseUrl || !supabaseKey) {
+if (!supabaseUrl || !supabaseKey || !apiKeySecret) {
   throw new Error("Missing required environment variables");
 }
 
@@ -21,8 +22,8 @@ type RequestBody = {
   prompt: string | null;
 };
 
-function hashApiKey(apiKey: string) {
-  return createHash("sha256").update(apiKey).digest("hex");
+function hashApiKey(apiKey: string, secret: string) {
+  return createHmac("sha256", secret).update(apiKey).digest("hex");
 }
 
 export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
@@ -65,14 +66,13 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
       }
 
       // Check the API key
-      const { data: apiKeyData } = await supabase
+      const { data: apiKeyData, error } = await supabase
         .from("api_keys")
         .select("*")
-        .eq("api_key", hashApiKey(apiKey))
-        .single()
-        .throwOnError();
+        .eq("api_key", hashApiKey(apiKey, apiKeySecret))
+        .single();
 
-      if (!apiKeyData) {
+      if (error || !apiKeyData) {
         return {
           statusCode: 401,
           body: JSON.stringify({ error: "Invalid API key." }),
@@ -115,7 +115,6 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
         statusCode: 500,
         body: JSON.stringify({
           error: "Internal Server Error",
-          details: error instanceof Error ? error.message : String(error),
         }),
       };
     }

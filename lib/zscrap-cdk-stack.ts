@@ -16,6 +16,7 @@ export class ZscrapCdkStack extends cdk.Stack {
 
     // Check if required environment variables are set
     if (
+      !process.env.API_KEY_SECRET ||
       !process.env.DEBUG ||
       !process.env.SUPABASE_URL ||
       !process.env.SUPABASE_ANON_KEY ||
@@ -83,7 +84,10 @@ export class ZscrapCdkStack extends cdk.Stack {
         handler: "handler",
         entry: path.join(__dirname, "../lambda/scraper-endpoint.ts"),
         timeout: cdk.Duration.seconds(30),
-        environment,
+        environment: {
+          ...environment,
+          API_KEY_SECRET: process.env.API_KEY_SECRET,
+        },
       }
     );
 
