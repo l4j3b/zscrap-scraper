@@ -51,7 +51,7 @@ export class ZscrapCdkStack extends cdk.Stack {
     // Create the Lambda function using NodejsFunction
     const zscrapScraperWorker = new lambdaNodejs.NodejsFunction(
       this,
-      "ZscrapScraperWorker",
+      "ZscrapScraperLambdaWorker",
       {
         runtime: lambda.Runtime.NODEJS_20_X,
         handler: "handler",
@@ -77,7 +77,7 @@ export class ZscrapCdkStack extends cdk.Stack {
     // Create the Lambda function for API invocation
     const zscrapScraperEndpoint = new lambdaNodejs.NodejsFunction(
       this,
-      "ZscrapScraperEndpoint",
+      "ZscrapScraperLambdaEndpoint",
       {
         runtime: lambda.Runtime.NODEJS_20_X,
         handler: "handler",
@@ -88,10 +88,14 @@ export class ZscrapCdkStack extends cdk.Stack {
     );
 
     // Create an API Gateway and integrate it with the Lambda function
-    const api = new apigateway.LambdaRestApi(this, "ZscrapScraperEndpoint", {
-      handler: zscrapScraperEndpoint,
-      proxy: false,
-    });
+    const api = new apigateway.LambdaRestApi(
+      this,
+      "ZscrapScraperAPIGatewayEndpoint",
+      {
+        handler: zscrapScraperEndpoint,
+        proxy: false,
+      }
+    );
 
     // Define the API endpoint and methods
     const processUrlResource = api.root.addResource("process-url");
