@@ -59,9 +59,9 @@ export class ZscrapCdkStack extends cdk.Stack {
         entry: path.join(__dirname, "../lambda/scraper-worker.ts"),
         timeout: cdk.Duration.seconds(30),
         environment,
-        // bundling: {
-        //   nodeModules: ["@supabase/supabase-js"],
-        // },
+        bundling: {
+          nodeModules: ["@supabase/supabase-js", "@sentry/aws-serverless"],
+        },
       }
     );
 
@@ -87,6 +87,9 @@ export class ZscrapCdkStack extends cdk.Stack {
         environment: {
           ...environment,
           API_KEY_SECRET: process.env.API_KEY_SECRET,
+        },
+        bundling: {
+          nodeModules: ["@supabase/supabase-js", "@sentry/aws-serverless"],
         },
       }
     );

@@ -5,22 +5,22 @@ import { processUrl } from "./lib/process-url";
 import { deductApiCredit } from "./lib/deduct-api-credit";
 import { createSupabaseClient } from "./lib/create-supabase-client";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const zenrowsApiKey = process.env.ZENROWS_API_KEY;
-const openaiApiKey = process.env.OPENAI_API_KEY;
-
-if (!supabaseUrl || !supabaseKey || !zenrowsApiKey || !openaiApiKey) {
-  throw new Error("Missing required environment variables");
-}
-
-const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
-
 type MessageBody = {
   scraperUrlId: string | null;
 };
 
-export const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
+const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  const zenrowsApiKey = process.env.ZENROWS_API_KEY;
+  const openaiApiKey = process.env.OPENAI_API_KEY;
+
+  if (!supabaseUrl || !supabaseKey || !zenrowsApiKey || !openaiApiKey) {
+    throw new Error("Missing required environment variables");
+  }
+
+  const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
+
   for (const record of event.Records) {
     try {
       const { scraperUrlId } = JSON.parse(record.body || "{}") as MessageBody;
@@ -104,3 +104,5 @@ export const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
     }
   }
 });
+
+module.exports = { handler };
