@@ -1,6 +1,7 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 import * as Sentry from "@sentry/aws-serverless";
 import { createHash } from "node:crypto";
+import * as urlValidator from "valid-url";
 
 import { processUrl } from "./lib/process-url";
 import { deductApiCredit } from "./lib/deduct-api-credit";
@@ -18,7 +19,6 @@ const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
 type RequestBody = {
   url: string | null;
   prompt: string | null;
-  apiKey: string | null;
 };
 
 function hashApiKey(apiKey: string) {
@@ -28,8 +28,8 @@ function hashApiKey(apiKey: string) {
 export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
   async (event) => {
     try {
-      const body: RequestBody = JSON.parse(event.body || "{}");
-      const { url, prompt, apiKey } = body;
+      const apiKey = event.headers["Authorization"]?.replace("Bearer ", "");
+      const { url, prompt } = JSON.parse(event.body || "{}") as RequestBody;
 
       if (!url || !prompt || !apiKey) {
         return {
@@ -38,6 +38,22 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
             error:
               "Missing required parameters: url, prompt, organization_id, api_key",
           }),
+        };
+      }
+
+      // Validate URL
+      if (!urlValidator.isWebUri(url)) {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: "Invalid URL provided." }),
+        };
+      }
+
+      // Validate prompt
+      if (typeof prompt !== "string" || prompt.trim() === "") {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ error: "Prompt must be a non-empty string." }),
         };
       }
 

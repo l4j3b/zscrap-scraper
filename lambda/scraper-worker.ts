@@ -23,8 +23,7 @@ type MessageBody = {
 export const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
   for (const record of event.Records) {
     try {
-      const messageBody: MessageBody = JSON.parse(record.body || "{}");
-      const { scraperUrlId } = messageBody;
+      const { scraperUrlId } = JSON.parse(record.body || "{}") as MessageBody;
 
       if (!scraperUrlId) {
         continue;
