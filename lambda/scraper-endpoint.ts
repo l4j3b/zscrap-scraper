@@ -18,7 +18,6 @@ const supabase = createSupabaseClient(supabaseUrl, supabaseKey);
 type RequestBody = {
   url: string | null;
   prompt: string | null;
-  organizationId: string | null;
   apiKey: string | null;
 };
 
@@ -30,9 +29,9 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
   async (event) => {
     try {
       const body: RequestBody = JSON.parse(event.body || "{}");
-      const { url, prompt, organizationId, apiKey } = body;
+      const { url, prompt, apiKey } = body;
 
-      if (!url || !prompt || !organizationId || !apiKey) {
+      if (!url || !prompt || !apiKey) {
         return {
           statusCode: 400,
           body: JSON.stringify({
@@ -47,7 +46,6 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
         .from("api_keys")
         .select("*")
         .eq("api_key", hashApiKey(apiKey))
-        .eq("organization_id", organizationId)
         .single()
         .throwOnError();
 
@@ -59,8 +57,7 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
       }
 
       // Deduct the API credit
-      await deductApiCredit(supabase, organizationId);
-
+      await deductApiCredit(supabase, apiKeyData.organization_id);
       try {
         // Process the URL
         const { jsonResult } = await processUrl({
@@ -78,7 +75,7 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
         // Re credit the API credit on error
         await supabase
           .rpc("add_api_credit", {
-            org_id: organizationId,
+            org_id: apiKeyData.organization_id,
           })
           .throwOnError();
 
