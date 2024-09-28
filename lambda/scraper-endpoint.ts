@@ -29,14 +29,21 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
   async (event) => {
     try {
       const apiKey = event.headers["Authorization"]?.replace("Bearer ", "");
+
+      if (!apiKey) {
+        return {
+          statusCode: 401,
+          body: JSON.stringify({ error: "Missing API key." }),
+        };
+      }
+
       const { url, prompt } = JSON.parse(event.body || "{}") as RequestBody;
 
-      if (!url || !prompt || !apiKey) {
+      if (!url || !prompt) {
         return {
           statusCode: 400,
           body: JSON.stringify({
-            error:
-              "Missing required parameters: url, prompt, organization_id, api_key",
+            error: "Missing required parameters: url, prompt",
           }),
         };
       }
