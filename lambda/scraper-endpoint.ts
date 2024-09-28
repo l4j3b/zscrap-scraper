@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 
 import { processUrl } from "./lib/process-url";
 import { Database } from "../database.types";
+import { deductApiCredit } from "./lib/deduct-api-credit";
 
 const supabaseUrl = process.env.SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_ANON_KEY!;
@@ -43,14 +44,15 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
       }
 
       // Check the API key
-      const { data: apiKeyData, error: apiKeyError } = await supabase
+      const { data: apiKeyData } = await supabase
         .from("api_keys")
         .select("*")
         .eq("api_key", hashApiKey(apiKey))
         .eq("organization_id", organizationId)
-        .single();
+        .single()
+        .throwOnError();
 
-      if (apiKeyError || !apiKeyData) {
+      if (!apiKeyData) {
         return {
           statusCode: 401,
           body: JSON.stringify({ error: "Invalid API key." }),
@@ -58,25 +60,10 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
       }
 
       // Deduct the API credit
-      const { data: updateAPICreditsResult, error: updateAPICreditsError } =
-        await supabase.rpc("deduct_api_credit", {
-          org_id: organizationId,
-        });
-
-      if (updateAPICreditsError) {
-        throw new Error(
-          "Failed to deduct API credit: " + updateAPICreditsError.message
-        );
-      }
-
-      if (!updateAPICreditsResult[0]?.credits_deducted) {
-        return {
-          statusCode: 402,
-          body: JSON.stringify({ error: "Insufficient API credits." }),
-        };
-      }
+      await deductApiCredit(supabase, organizationId);
 
       try {
+        // Process the URL
         const { jsonResult } = await processUrl({
           url,
           prompt,

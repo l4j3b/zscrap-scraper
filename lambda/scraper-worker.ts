@@ -5,6 +5,7 @@ import { SQSHandler } from "aws-lambda";
 
 import { Database } from "../database.types";
 import { processUrl } from "./lib/process-url";
+import { deductApiCredit } from "./lib/deduct-api-credit";
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
@@ -32,34 +33,19 @@ export const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
       }
 
       // Retrieve the scraper_url to process
-      const { data: scraperUrl, error: scraperUrlError } = await supabase
+      const { data: scraperUrl } = await supabase
         .from("scraper_urls")
         .select("organization_id, url, scrapers!inner(prompt)")
         .eq("id", scraperUrlId)
         .single()
         .throwOnError();
 
-      if (scraperUrlError) throw scraperUrlError;
-
-      if (!scraperUrl.url || !scraperUrl.scrapers.prompt) {
+      if (!scraperUrl || !scraperUrl.url || !scraperUrl.scrapers.prompt) {
         throw new Error("Missing required parameters: url, prompt");
       }
 
       // Deduct the API credit
-      const { data: updateAPICreditsResult, error: updateAPICreditsError } =
-        await supabase.rpc("deduct_api_credit", {
-          org_id: scraperUrl.organization_id,
-        });
-
-      if (updateAPICreditsError) {
-        throw new Error(
-          "Failed to deduct API credit: " + updateAPICreditsError.message
-        );
-      }
-
-      if (!updateAPICreditsResult[0].credits_deducted) {
-        throw new Error("Insufficient API credits.");
-      }
+      await deductApiCredit(supabase, scraperUrl.organization_id);
 
       try {
         // At this point, we have enough credits to scrape the URL, any errors from here on out should result in the API credit being credited back
