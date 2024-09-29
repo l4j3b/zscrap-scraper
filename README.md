@@ -24,3 +24,8 @@ curl -X POST 'https://<api-id>.execute-api.us-east-1.amazonaws.com/prod/process-
     "prompt": "Extract the tracklist."
   }'
 ```
+
+## Misc
+
+Regarding handler exports/Sentry:
+<https://github.com/aws-observability/aws-otel-lambda/issues/284>

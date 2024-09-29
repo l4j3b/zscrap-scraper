@@ -40,6 +40,12 @@ export class ZscrapCdkStack extends cdk.Stack {
       NODE_OPTIONS: process.env.NODE_OPTIONS,
     };
 
+    const bundling = {
+      forceDockerBundling: true,
+      platform: "linux/amd64",
+      nodeModules: ["@supabase/supabase-js", "@sentry/aws-serverless"],
+    };
+
     // Create an SQS FIFO queue
     const zscrapQueue = new sqs.Queue(this, "ZscrapQueue", {
       queueName: "ZscrapQueue.fifo",
@@ -59,9 +65,7 @@ export class ZscrapCdkStack extends cdk.Stack {
         entry: path.join(__dirname, "../lambda/scraper-worker.ts"),
         timeout: cdk.Duration.seconds(30),
         environment,
-        bundling: {
-          nodeModules: ["@supabase/supabase-js", "@sentry/aws-serverless"],
-        },
+        bundling,
       }
     );
 
@@ -88,9 +92,7 @@ export class ZscrapCdkStack extends cdk.Stack {
           ...environment,
           API_KEY_SECRET: process.env.API_KEY_SECRET,
         },
-        bundling: {
-          nodeModules: ["@supabase/supabase-js", "@sentry/aws-serverless"],
-        },
+        bundling,
       }
     );
 
