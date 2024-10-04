@@ -10,6 +10,7 @@ import { createSupabaseClient } from "./lib/create-supabase-client";
 type RequestBody = {
   url: string | null;
   prompt: string | null;
+  jsonSchema: string | null;
 };
 
 function hashApiKey(apiKey: string, secret: string) {
@@ -70,13 +71,13 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
         };
       }
 
-      const { url, prompt } = body;
+      const { url, prompt, jsonSchema } = body;
 
-      if (!url || !prompt) {
+      if (!url || !prompt || !jsonSchema) {
         return {
           statusCode: 400,
           body: JSON.stringify({
-            error: "Missing required parameters: url, prompt",
+            error: "Missing required parameters: url, prompt, jsonSchema",
           }),
         };
       }
@@ -94,6 +95,16 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
         return {
           statusCode: 400,
           body: JSON.stringify({ error: "Prompt must be a non-empty string." }),
+        };
+      }
+
+      // Validate jsonSchema
+      if (typeof jsonSchema !== "string" || jsonSchema.trim() === "") {
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "JSON schema must be a non-empty string.",
+          }),
         };
       }
 
@@ -118,17 +129,22 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
 
       try {
         // Process the URL
-        const { jsonResult, usageInfo } = await processUrl({
+        const { result, usageInfo } = await processUrl({
           url,
           prompt,
+          jsonSchema,
         });
+
+        // Creating a response object to easily retrieve the type
+        // TODO: Make the response type exportable/shared
+        const response = {
+          result,
+          usageInfo,
+        };
 
         return {
           statusCode: 200,
-          body: JSON.stringify({
-            jsonResult,
-            usageInfo,
-          }),
+          body: JSON.stringify(response),
         };
       } catch (error) {
         // Re credit the API credit on error

@@ -4,19 +4,22 @@ export async function scrapGPT({
   apiKey,
   htmlContent,
   userPrompt,
+  userJsonSchema,
 }: {
   apiKey: string;
   htmlContent: string;
   userPrompt: string;
+  userJsonSchema: string;
 }) {
   const prompt = `
-You have been provided with TEXT content retrieved from the HTML content of a URL that the user has input. The user wants to extract specific information from this HTML.
+You have been provided with text extracted from the HTML content of a URL that the user has input. Your task is to extract relevant information based on the user's request, following the instructions below:
 
 Instructions:
-1. Always output the result in JSON format. The JSON output should be enclosed between "###START_JSON###" and "###END_JSON###" to allow for easy extraction.
-2. If the user has not provided specific details on the structure, infer the structure based on the content. Do your best to present the data in a meaningful way.
-3. If the HTML suggests a better or more specific prompt that the user could have used, include this suggestion after the JSON output, enclosed between "###START_SUGGESTION###" and "###END_SUGGESTION###".
-4. If no relevant data can be extracted, return an empty JSON object: {}.
+1. **Output Format**: Always return the result in JSON format. Enclose the JSON output between "###START_JSON###" and "###END_JSON###" for easy extraction.
+2. **Inference**: If the user hasn't specified a structure, infer a meaningful JSON structure from the content. Return this inferred structure between "###START_SCHEMA###" and "###END_SCHEMA###".
+3. **Prompt Suggestion**: If the HTML suggests a better prompt that could lead to more accurate results, include your suggestion between "###START_SUGGESTION###" and "###END_SUGGESTION###". Those can include suggestions regarding the prompt or the schema.
+4. **Empty Results**: If no relevant data is found, return an empty JSON object: '{}'.
+5. **Provided JSON Schema**: If the user provides a JSON schema, adhere to it while extracting data. Return the populated data and schema if applicable.
 
 Example Output:
 ###START_JSON###
@@ -25,12 +28,25 @@ Example Output:
 }
 ###END_JSON###
 
+###START_SCHEMA###
+{
+    "exampleField": "exampleValue or/and instructions on how to extract it"
+}
+###END_SCHEMA###
+
 ###START_SUGGESTION###
-You might want to ask for "specific data" instead of "general data" to improve accuracy.
+You may want to ask for "specific data" instead of "general data" for better accuracy.
 ###END_SUGGESTION###
 
-User Request:
+INPUTS:
+
+<User Request>
 ${userPrompt}
+</User Request>
+
+<JSON Schema (optional)>
+${userJsonSchema}
+</JSON Schema (optional)>
 `.trim();
 
   // Step 3: Combine the prompt with the HTML content and call askGPT
@@ -47,8 +63,12 @@ ${userPrompt}
   const suggestionMatch = gptResponse.data.match(
     /###START_SUGGESTION###([\s\S]*?)###END_SUGGESTION###/
   );
+  const jsonSchemaMatch = gptResponse.data.match(
+    /###START_SCHEMA###([\s\S]*?)###END_SCHEMA###/
+  );
 
-  let jsonResult = {};
+  // TODO: better default value?
+  let jsonResult = "{}";
 
   if (jsonResultMatch && jsonResultMatch[1]) {
     try {
@@ -56,11 +76,20 @@ ${userPrompt}
     } catch (error) {
       console.error("Failed to parse JSON result:", error);
       jsonResult = jsonResultMatch[1].trim();
+      // TODO: Handle this
       // throw new Error('Invalid JSON format returned by GPT');
     }
   }
 
   const suggestion = suggestionMatch ? suggestionMatch[1].trim() : null;
+  const jsonSchema = jsonSchemaMatch ? jsonSchemaMatch[1].trim() : null;
 
-  return { gptResponse, jsonResult, suggestion };
+  return {
+    usageInfo: gptResponse.usageInfo,
+    result: {
+      jsonResult,
+      suggestion,
+      jsonSchema,
+    },
+  };
 }

@@ -10,18 +10,23 @@ const testMode = process.env.TEST_MODE === "true";
 export async function processUrl({
   url,
   prompt,
+  jsonSchema,
 }: {
   url: string;
   prompt: string;
+  jsonSchema: string;
 }) {
   if (testMode) {
     console.log("TEST_MODE: Skipping scraping and AI processing");
 
     return {
-      result: "TEST MODE",
+      result: {
+        title: "TEST_MODE",
+        jsonResult: "{}",
+        suggestion: null as string | null,
+        jsonSchema: null as string | null,
+      },
       usageInfo: null,
-      jsonResult: { result: "TEST_MODE" },
-      suggestion: null,
     };
   }
 
@@ -57,18 +62,21 @@ export async function processUrl({
   const $ = cheerio.load(data.html);
   $("script, style, svg").remove();
   const text = $("html").text().replace(/\n/g, "");
+  const title = $("title").text();
 
   // Ask GPT to extract the data
-  const { gptResponse, jsonResult, suggestion } = await scrapGPT({
+  const { result, usageInfo } = await scrapGPT({
     apiKey: openaiApiKey,
     htmlContent: text,
     userPrompt: prompt,
+    userJsonSchema: jsonSchema,
   });
 
   return {
-    result: gptResponse.data,
-    usageInfo: gptResponse.usageInfo,
-    jsonResult,
-    suggestion,
+    result: {
+      ...result,
+      title,
+    },
+    usageInfo,
   };
 }

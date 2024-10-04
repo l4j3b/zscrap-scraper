@@ -32,7 +32,7 @@ const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
       // Retrieve the scraper_url to process
       const { data: scraperUrl } = await supabase
         .from("scraper_urls")
-        .select("organization_id, url, scrapers!inner(prompt)")
+        .select("organization_id, url, scrapers!inner(prompt, json_schema)")
         .eq("id", scraperUrlId)
         .single()
         .throwOnError();
@@ -55,9 +55,10 @@ const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
           .throwOnError();
 
         // Process the URL
-        const { result, usageInfo, jsonResult, suggestion } = await processUrl({
+        const { result, usageInfo } = await processUrl({
           url: scraperUrl.url,
           prompt: scraperUrl.scrapers.prompt,
+          jsonSchema: scraperUrl.scrapers.json_schema,
         });
 
         // Save the data
@@ -65,10 +66,11 @@ const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
           .from("scraper_urls")
           .update({
             status: "completed",
-            result,
+            result: result.jsonResult,
+            title: result.title,
             usageInfo,
-            jsonResult,
-            suggestion,
+            jsonResult: result.jsonResult,
+            suggestion: result.suggestion,
             updatedAt: new Date().toISOString(),
             error: null,
           })

@@ -139,25 +139,28 @@ export interface Database {
           created_at: string;
           created_by_id: string;
           id: string;
+          json_schema: string;
           name: string;
           organization_id: string;
-          prompt: string | null;
+          prompt: string;
         };
         Insert: {
           created_at?: string;
           created_by_id: string;
           id?: string;
+          json_schema: string;
           name: string;
           organization_id: string;
-          prompt?: string | null;
+          prompt: string;
         };
         Update: {
           created_at?: string;
           created_by_id?: string;
           id?: string;
+          json_schema?: string;
           name?: string;
           organization_id?: string;
-          prompt?: string | null;
+          prompt?: string;
         };
         Relationships: [
           {
