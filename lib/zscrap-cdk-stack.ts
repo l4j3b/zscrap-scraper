@@ -60,7 +60,7 @@ export class ZscrapCdkStack extends cdk.Stack {
       this,
       "ZscrapScraperLambdaWorker",
       {
-        runtime: lambda.Runtime.NODEJS_LATEST,
+        runtime: lambda.Runtime.NODEJS_20_X,
         handler: "handler",
         entry: path.join(__dirname, "../lambda/scraper-worker.ts"),
         timeout: cdk.Duration.seconds(30),
@@ -84,7 +84,7 @@ export class ZscrapCdkStack extends cdk.Stack {
       this,
       "ZscrapScraperLambdaEndpoint",
       {
-        runtime: lambda.Runtime.NODEJS_LATEST,
+        runtime: lambda.Runtime.NODEJS_20_X,
         handler: "handler",
         entry: path.join(__dirname, "../lambda/scraper-endpoint.ts"),
         timeout: cdk.Duration.seconds(30),
