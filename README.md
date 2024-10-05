@@ -16,7 +16,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 ## Test
 
 ```
-curl -X POST 'https://<api-id>.execute-api.us-east-1.amazonaws.com/prod/process-url' \
+curl -X POST 'https://<function-id>.lambda-url.us-east-1.on.aws' \
   -H 'Content-Type: application/json' \
   -H 'Authorization: Bearer sk_your_api_key' \
   -d '{

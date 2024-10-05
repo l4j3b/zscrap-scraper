@@ -31,6 +31,8 @@ export async function processUrl({
   }
 
   // Scrape the URL
+  // Measure the time it takes to scrape the URL
+  let start = Date.now();
   const client = new ZenRows(zenrowsApiKey);
   const scraper = await client.get(url, {
     js_render: true,
@@ -47,6 +49,9 @@ export async function processUrl({
       { wait: 2000 },
     ]),
   });
+  let end = Date.now();
+  let duration = end - start;
+  console.log(`Scraping URL took ${duration}ms`);
 
   const data: { html: string } = await scraper.json();
 
@@ -61,12 +66,16 @@ export async function processUrl({
   const title = $("title").text();
 
   // Ask GPT to extract the data
+  start = Date.now();
   const { result, usageInfo } = await scrapGPT({
     apiKey: openaiApiKey,
     htmlContent: text,
     userPrompt: prompt,
     userJsonSchema: jsonSchema,
   });
+  end = Date.now();
+  duration = end - start;
+  console.log(`Processing URL took ${duration}ms`);
 
   return {
     result: {

@@ -16,10 +16,10 @@ You have been provided with text extracted from the HTML content of a URL that t
 
 Instructions:
 1. **Output Format**: Always return the result in JSON format. Enclose the JSON output between "###START_JSON###" and "###END_JSON###" for easy extraction.
-2. **Inference**: If the user hasn't specified a structure, infer a meaningful JSON structure from the content. Return this inferred structure between "###START_SCHEMA###" and "###END_SCHEMA###".
-3. **Prompt Suggestion**: If the HTML suggests a better prompt that could lead to more accurate results, include your suggestion between "###START_SUGGESTION###" and "###END_SUGGESTION###". Those can include suggestions regarding the prompt or the schema.
-4. **Empty Results**: If no relevant data is found, return an empty JSON object: '{}'.
-5. **Provided JSON Schema**: If the user provides a JSON schema, adhere to it while extracting data. Return the populated data and schema if applicable.
+2. **JSON Schema**: If the user provides a JSON schema, adhere to it while extracting data. Return the populated data and schema if applicable. Return the cleaned up/corrected (if necessary) JSON Schema between "###START_SCHEMA###" and "###END_SCHEMA###".
+3. **Inference**: If the user hasn't specified a structure, infer a meaningful JSON structure from the content. Return this inferred structure between "###START_SCHEMA###" and "###END_SCHEMA###".
+4. **Prompt Suggestion**: If the HTML suggests a better prompt that could lead to more accurate results, include your suggestions between "###START_SUGGESTION###" and "###END_SUGGESTION###". Those can include suggestions regarding the prompt or the schema.
+5. **Empty Results**: If no relevant data is found, return an empty JSON object: '{}'.
 
 Example Output:
 ###START_JSON###

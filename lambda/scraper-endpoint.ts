@@ -128,7 +128,12 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
       }
 
       // Deduct the API credit
+      // Measure the time it takes to deduct the credit
+      const start = Date.now();
       await deductApiCredit(supabase, apiKeyData.organization_id);
+      const end = Date.now();
+      const duration = end - start;
+      console.log(`Deducting API credit took ${duration}ms`);
 
       try {
         // Process the URL
