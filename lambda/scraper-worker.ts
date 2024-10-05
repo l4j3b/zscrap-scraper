@@ -71,7 +71,7 @@ const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
             usageInfo,
             jsonResult: result.jsonResult,
             suggestion: result.suggestion,
-            updatedAt: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
             error: null,
           })
           .eq("id", scraperUrlId)
@@ -90,7 +90,7 @@ const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
           .update({
             status: "failed",
             error: error instanceof Error ? error.message : String(error),
-            updatedAt: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           })
           .eq("id", scraperUrlId)
           .throwOnError();

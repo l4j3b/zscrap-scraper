@@ -10,6 +10,8 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway";
 
 dotenv.config();
 
+const MAX_CONCURRENCY = 10;
+
 export class ZscrapCdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -63,7 +65,8 @@ export class ZscrapCdkStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         handler: "handler",
         entry: path.join(__dirname, "../lambda/scraper-worker.ts"),
-        timeout: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(40),
+        memorySize: 512,
         environment,
         bundling,
       }
@@ -73,13 +76,14 @@ export class ZscrapCdkStack extends cdk.Stack {
     zscrapScraperWorker.addEventSource(
       new SqsEventSource(zscrapQueue, {
         batchSize: 1, // Process one message at a time due to ~15s processing time
+        maxConcurrency: MAX_CONCURRENCY,
       })
     );
 
     // Grant the Lambda function permissions to consume messages from the queue
     zscrapQueue.grantConsumeMessages(zscrapScraperWorker);
 
-    // Create the Lambda function for API invocation
+    // Create the Lambda function for direct API invocation from the frontend
     const zscrapScraperEndpoint = new lambdaNodejs.NodejsFunction(
       this,
       "ZscrapScraperLambdaEndpoint",
@@ -87,7 +91,8 @@ export class ZscrapCdkStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         handler: "handler",
         entry: path.join(__dirname, "../lambda/scraper-endpoint.ts"),
-        timeout: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(40),
+        memorySize: 512,
         environment: {
           ...environment,
           API_KEY_SECRET: process.env.API_KEY_SECRET,
@@ -96,18 +101,34 @@ export class ZscrapCdkStack extends cdk.Stack {
       }
     );
 
-    // Create an API Gateway and integrate it with the Lambda function
-    const api = new apigateway.LambdaRestApi(
-      this,
-      "ZscrapScraperAPIGatewayEndpoint",
-      {
-        handler: zscrapScraperEndpoint,
-        proxy: false,
-      }
-    );
+    // Add a Function URL for direct invocation (to avoid API Gateway timeout)
+    const functionUrl = zscrapScraperEndpoint.addFunctionUrl({
+      // No authentication, open to the public (called from the backend with api key for now)
+      authType: lambda.FunctionUrlAuthType.NONE,
+      cors: {
+        allowedOrigins: ["*"],
+        allowedMethods: [lambda.HttpMethod.POST],
+        allowedHeaders: ["*"],
+      },
+    });
 
-    // Define the API endpoint and methods
-    const processUrlResource = api.root.addResource("process-url");
-    processUrlResource.addMethod("POST");
+    new cdk.CfnOutput(this, "ZscrapScraperEndpointFunctionUrl", {
+      value: functionUrl.url,
+      description: "The Function URL of the Zscrap Scraper Lambda Endpoint",
+    });
+
+    // // Create an API Gateway and integrate it with the Lambda function
+    // const api = new apigateway.LambdaRestApi(
+    //   this,
+    //   "ZscrapScraperAPIGatewayEndpoint",
+    //   {
+    //     handler: zscrapScraperEndpoint,
+    //     proxy: false,
+    //   }
+    // );
+
+    // // Define the API endpoint and methods
+    // const processUrlResource = api.root.addResource("process-url");
+    // processUrlResource.addMethod("POST");
   }
 }

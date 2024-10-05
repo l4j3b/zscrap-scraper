@@ -30,11 +30,11 @@ describe("ZscrapScraperEndpoint", () => {
       throw new Error("Handler returned void");
     }
 
-    console.log("Result:", result);
+    console.log("Result:", result.body.slice(0, 1000));
 
     expect(result.statusCode).toBe(200);
-    expect(JSON.parse(result.body)).toHaveProperty("jsonResult");
-  });
+    expect(JSON.parse(result.body)).toHaveProperty("result");
+  }, 30000);
 
   it("should return a 401 response for missing API key", async () => {
     const event = {

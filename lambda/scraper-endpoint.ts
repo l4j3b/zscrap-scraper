@@ -8,9 +8,9 @@ import { deductApiCredit } from "./lib/deduct-api-credit";
 import { createSupabaseClient } from "./lib/create-supabase-client";
 
 type RequestBody = {
-  url: string | null;
-  prompt: string | null;
-  jsonSchema: string | null;
+  url: string | null | undefined;
+  prompt: string | null | undefined;
+  jsonSchema: string | null | undefined;
 };
 
 function hashApiKey(apiKey: string, secret: string) {
@@ -73,11 +73,11 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
 
       const { url, prompt, jsonSchema } = body;
 
-      if (!url || !prompt || !jsonSchema) {
+      if (!url || !prompt) {
         return {
           statusCode: 400,
           body: JSON.stringify({
-            error: "Missing required parameters: url, prompt, jsonSchema",
+            error: "Missing required parameters: url, prompt",
           }),
         };
       }
@@ -99,11 +99,14 @@ export const handler: APIGatewayProxyHandler = Sentry.wrapHandler(
       }
 
       // Validate jsonSchema
-      if (typeof jsonSchema !== "string" || jsonSchema.trim() === "") {
+      if (
+        jsonSchema &&
+        (typeof jsonSchema !== "string" || jsonSchema.trim() === "")
+      ) {
         return {
           statusCode: 400,
           body: JSON.stringify({
-            error: "JSON schema must be a non-empty string.",
+            error: "Invalid JSON schema provided.",
           }),
         };
       }

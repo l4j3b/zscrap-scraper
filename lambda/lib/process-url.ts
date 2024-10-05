@@ -14,7 +14,7 @@ export async function processUrl({
 }: {
   url: string;
   prompt: string;
-  jsonSchema: string;
+  jsonSchema?: string | null;
 }) {
   if (testMode) {
     console.log("TEST_MODE: Skipping scraping and AI processing");
@@ -38,21 +38,17 @@ export async function processUrl({
     js_instructions: JSON.stringify([
       { wait: 2000 },
       { scroll_y: 3000 },
-      { wait: 2000 },
+      { wait: 500 },
       { scroll_y: 5000 },
       { wait: 1000 },
       { scroll_y: 3000 },
-      { wait: 1000 },
+      { wait: 500 },
       { scroll_y: 4000 },
       { wait: 2000 },
     ]),
   });
 
-  const data: { html: string; status: string } = await scraper.json();
-
-  if (data.status !== "200") {
-    throw new Error(`Scraper returned non-200 status: ${JSON.stringify(data)}`);
-  }
+  const data: { html: string } = await scraper.json();
 
   if (!data.html) {
     throw new Error("Scraper returned no HTML.");

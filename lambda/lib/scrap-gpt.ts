@@ -9,9 +9,9 @@ export async function scrapGPT({
   apiKey: string;
   htmlContent: string;
   userPrompt: string;
-  userJsonSchema: string;
+  userJsonSchema?: string | null;
 }) {
-  const prompt = `
+  let prompt = `
 You have been provided with text extracted from the HTML content of a URL that the user has input. Your task is to extract relevant information based on the user's request, following the instructions below:
 
 Instructions:
@@ -43,11 +43,15 @@ INPUTS:
 <User Request>
 ${userPrompt}
 </User Request>
-
-<JSON Schema (optional)>
-${userJsonSchema}
-</JSON Schema (optional)>
 `.trim();
+
+  if (userJsonSchema) {
+    prompt += `
+<JSON Schema>
+${userJsonSchema}
+</JSON Schema>
+`.trim();
+  }
 
   // Step 3: Combine the prompt with the HTML content and call askGPT
   const gptResponse = await askGPT({
