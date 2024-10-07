@@ -10,7 +10,7 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway";
 
 dotenv.config();
 
-const MAX_CONCURRENCY = 10;
+const MAX_CONCURRENCY = 16;
 
 export class ZscrapCdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -48,11 +48,9 @@ export class ZscrapCdkStack extends cdk.Stack {
       nodeModules: ["@supabase/supabase-js", "@sentry/aws-serverless"],
     };
 
-    // Create an SQS FIFO queue
+    // Create an SQS queue
     const zscrapQueue = new sqs.Queue(this, "ZscrapQueue", {
-      queueName: "ZscrapQueue.fifo",
-      fifo: true,
-      contentBasedDeduplication: true,
+      queueName: "ZscrapQueue",
       visibilityTimeout: cdk.Duration.seconds(45),
       retentionPeriod: cdk.Duration.days(4),
     });
@@ -69,13 +67,14 @@ export class ZscrapCdkStack extends cdk.Stack {
         memorySize: 512,
         environment,
         bundling,
+        reservedConcurrentExecutions: MAX_CONCURRENCY,
       }
     );
 
     // Add SQS as an event source for the Lambda function
     zscrapScraperWorker.addEventSource(
       new SqsEventSource(zscrapQueue, {
-        batchSize: 4, // Process one message at a time due to ~15s processing time
+        batchSize: 1, // Process one message at a time due to ~15s processing time
         maxConcurrency: MAX_CONCURRENCY,
       })
     );
