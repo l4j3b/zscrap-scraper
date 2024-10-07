@@ -25,6 +25,8 @@ export async function processUrl({
         jsonResult: "{}",
         suggestion: null as string | null,
         jsonSchema: null as string | null,
+        html: null as string | null,
+        text: null as string | null,
       },
       usageInfo: null,
     };
@@ -80,6 +82,8 @@ export async function processUrl({
   return {
     result: {
       ...result,
+      html: data.html,
+      text,
       title,
     },
     usageInfo,

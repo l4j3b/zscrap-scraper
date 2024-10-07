@@ -66,10 +66,11 @@ const handler: SQSHandler = Sentry.wrapHandler(async (event) => {
           .from("scraper_urls")
           .update({
             status: "completed",
-            result: result.jsonResult,
             title: result.title,
             usage_info: usageInfo,
             json_result: result.jsonResult,
+            html: result.html,
+            text: result.text,
             suggestion: result.suggestion,
             updated_at: new Date().toISOString(),
             error: null,

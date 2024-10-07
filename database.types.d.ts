@@ -73,7 +73,7 @@ export interface Database {
           id: string;
           json_result: Json | null;
           organization_id: string;
-          result: string | null;
+          raw_result: string | null;
           scraper_id: string;
           status: Database["public"]["Enums"]["scraper_url_status"];
           suggestion: string | null;
@@ -90,7 +90,7 @@ export interface Database {
           id?: string;
           json_result?: Json | null;
           organization_id: string;
-          result?: string | null;
+          raw_result?: string | null;
           scraper_id: string;
           status?: Database["public"]["Enums"]["scraper_url_status"];
           suggestion?: string | null;
@@ -107,7 +107,7 @@ export interface Database {
           id?: string;
           json_result?: Json | null;
           organization_id?: string;
-          result?: string | null;
+          raw_result?: string | null;
           scraper_id?: string;
           status?: Database["public"]["Enums"]["scraper_url_status"];
           suggestion?: string | null;

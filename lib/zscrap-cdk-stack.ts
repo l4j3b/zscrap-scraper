@@ -75,7 +75,7 @@ export class ZscrapCdkStack extends cdk.Stack {
     // Add SQS as an event source for the Lambda function
     zscrapScraperWorker.addEventSource(
       new SqsEventSource(zscrapQueue, {
-        batchSize: 1, // Process one message at a time due to ~15s processing time
+        batchSize: 4, // Process one message at a time due to ~15s processing time
         maxConcurrency: MAX_CONCURRENCY,
       })
     );
