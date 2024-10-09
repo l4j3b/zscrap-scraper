@@ -63,9 +63,10 @@ export async function processUrl({
 
   // Clean the HTML
   const $ = cheerio.load(data.html);
-  $("script, style, svg").remove();
-  const text = $("html").text().replace(/\n/g, "");
+  $("script, style, svg, meta, link").remove();
   const title = $("title").text();
+  const html = $.html().replace(/\n/g, "");
+  const text = $.text().replace(/\n/g, "");
 
   // Ask GPT to extract the data
   start = Date.now();
@@ -82,7 +83,7 @@ export async function processUrl({
   return {
     result: {
       ...result,
-      html: data.html,
+      html,
       text,
       title,
     },
