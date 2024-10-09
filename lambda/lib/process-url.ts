@@ -71,7 +71,7 @@ export async function processUrl({
   start = Date.now();
   const { result, usageInfo } = await scrapGPT({
     apiKey: openaiApiKey,
-    htmlContent: text,
+    htmlContent: data.html.replace(/\n/g, ""),
     userPrompt: prompt,
     userJsonSchema: jsonSchema,
   });

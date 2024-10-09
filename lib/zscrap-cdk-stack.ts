@@ -63,7 +63,7 @@ export class ZscrapCdkStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         handler: "handler",
         entry: path.join(__dirname, "../lambda/scraper-worker.ts"),
-        timeout: cdk.Duration.seconds(40),
+        timeout: cdk.Duration.seconds(120),
         memorySize: 512,
         environment,
         bundling,
@@ -90,7 +90,7 @@ export class ZscrapCdkStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_20_X,
         handler: "handler",
         entry: path.join(__dirname, "../lambda/scraper-endpoint.ts"),
-        timeout: cdk.Duration.seconds(40),
+        timeout: cdk.Duration.seconds(120),
         memorySize: 512,
         environment: {
           ...environment,
