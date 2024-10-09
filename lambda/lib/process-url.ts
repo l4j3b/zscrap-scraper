@@ -66,7 +66,8 @@ export async function processUrl({
   $("script, style, svg, meta, link").remove();
   const title = $("title").text();
   const html = $.html().replace(/\n/g, "");
-  const text = $.text().replace(/\n/g, "");
+  const text = $.text();
+  // .replace(/\n/g, "");
 
   // Ask GPT to extract the data
   start = Date.now();

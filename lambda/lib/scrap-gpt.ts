@@ -15,7 +15,7 @@ export async function scrapGPT({
 You have been provided with text extracted from the HTML content of a URL that the user has input. Your task is to extract relevant information based on the user's request, following the instructions below:
 
 Instructions:
-1. **Output Format**: Always return the result in JSON format. Enclose the JSON output between "###START_JSON###" and "###END_JSON###" for easy extraction.
+1. **Output Format**: Always return the result in JSON format. Enclose the JSON output between "###START_JSON###" and "###END_JSON###" for easy extraction. Do not "stringify" the JSON (don't add '\n' or '\t' or other whitespace characters).
 2. **JSON Schema**: If the user provides a JSON schema, adhere to it while extracting data. Return the populated data and schema if applicable. Clean up/correct the JSON Schema (if necessary to make it valid) but don't change the keys or values. Return the JSON Schema between "###START_SCHEMA###" and "###END_SCHEMA###".
 3. **Inference**: If the user hasn't specified a structure, infer a meaningful JSON structure from the content. Return this inferred structure between "###START_SCHEMA###" and "###END_SCHEMA###".
 4. **Prompt Suggestion**: If the HTML suggests a better prompt that could lead to more accurate results, include your suggestions between "###START_SUGGESTION###" and "###END_SUGGESTION###". Those can include suggestions regarding the prompt or the schema.
