@@ -1,5 +1,6 @@
 import { ZenRows } from "zenrows";
 import * as cheerio from "cheerio";
+import { Element } from "domhandler";
 
 import { scrapGPT } from "./scrap-gpt";
 
@@ -39,6 +40,8 @@ export async function processUrl({
   const scraper = await client.get(url, {
     js_render: true,
     json_response: true,
+    premium_proxy: true,
+    proxy_country: "us",
     js_instructions: JSON.stringify([
       { wait: 2000 },
       { scroll_y: 3000 },
@@ -61,11 +64,55 @@ export async function processUrl({
     throw new Error("Scraper returned no HTML.");
   }
 
-  // Clean the HTML
+  // Load HTML
   const $ = cheerio.load(data.html);
-  $("script, style, svg, meta, link").remove();
+
+  // Remove tags that don't add useful information
+  $("script, style, svg, meta, link, iframe, noscript").remove();
+
+  // Clean up attributes of each element
+  $("*").each((i, elem) => {
+    // Remove unnecessary attributes
+    $(elem)
+      .removeAttr("class")
+      .removeAttr("id")
+      .removeAttr("role")
+      .removeAttr("style");
+
+    // Remove 'aria-*', 'data-*', and event handler attributes
+    if (elem instanceof Element && elem.attribs) {
+      Object.keys(elem.attribs).forEach((attr) => {
+        if (
+          attr.startsWith("aria-") ||
+          attr.startsWith("data-") ||
+          attr.startsWith("on")
+        ) {
+          $(elem).removeAttr(attr);
+        }
+      });
+    }
+  });
+
+  // Remove empty tags, comments, and trim excessive whitespace
+  $("*").each((i, elem) => {
+    if ($(elem).children().length === 0 && !$(elem).text().trim()) {
+      $(elem).remove();
+    }
+  });
+
+  // Remove HTML comments
+  $.root()
+    .contents()
+    .each((i, elem) => {
+      if (elem.type === "comment") {
+        $(elem).remove();
+      }
+    });
+
+  // Get the cleaned HTML
   const title = $("title").text();
-  const html = $.html().replace(/\n/g, "");
+  const cleanedHtml = $.html().replace(/\n/g, "");
+
   const text = $.text();
   // .replace(/\n/g, "");
 
@@ -73,7 +120,7 @@ export async function processUrl({
   start = Date.now();
   const { result, usageInfo } = await scrapGPT({
     apiKey: openaiApiKey,
-    htmlContent: text,
+    htmlContent: cleanedHtml,
     userPrompt: prompt,
     userJsonSchema: jsonSchema,
   });
@@ -84,7 +131,8 @@ export async function processUrl({
   return {
     result: {
       ...result,
-      html,
+      html: cleanedHtml,
+      rawHtml: data.html,
       text,
       title,
     },
