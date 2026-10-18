@@ -2,6 +2,15 @@
 
 The serverless backend of zScrap's AI web-scraping API, built in September and October 2024. You give it a URL and a plain-English request, optionally with a JSON schema. It renders the page, cleans the HTML, and has GPT-4o-mini return the data as structured JSON.
 
+## How the two repos worked together
+
+| Repo | Role | Ran on |
+| --- | --- | --- |
+| [`zscrap`](https://github.com/l4j3b/zscrap) | The website and app: sign-up, organizations, scrapers and results, API keys, credits and billing | Cloudflare Pages |
+| `zscrap-scraper` (this repo) | The scraping backend: an SQS queue and worker Lambda for jobs from the app, and a public endpoint for API calls | AWS Lambda and SQS |
+
+The app saves the URLs a user adds as `scraper_urls` rows and sends their ids to this repo's queue. The worker scrapes each one and writes the result back to the row, where the app shows it. API customers call the endpoint here directly with the key the app issued to their organization.
+
 ```bash
 curl -X POST 'https://<function-id>.lambda-url.us-east-1.on.aws' \
   -H 'Content-Type: application/json' \
@@ -32,7 +41,7 @@ flowchart LR
 There are two ways in, and both run the same `processUrl` pipeline:
 
 - **Direct API calls** go to the endpoint Lambda through a Lambda function URL. A function URL is used instead of API Gateway because scrapes can run longer than API Gateway's timeout.
-- **Batch jobs** from the zScrap app go through an SQS queue. The worker Lambda loads the job from the `scraper_urls` table, runs it, and writes the status, result, HTML, text and usage back to that row.
+- **Batch jobs** from the [zScrap app](https://github.com/l4j3b/zscrap) go through an SQS queue. The worker Lambda loads the job from the `scraper_urls` table, runs it, and writes the status, result, HTML, text and usage back to that row.
 
 The pipeline:
 
