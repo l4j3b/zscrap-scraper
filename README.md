@@ -1,5 +1,8 @@
 # zScrap scraper
 
+> [!WARNING]
+> ⚠️ **Archived project (2024).** zScrap was never launched publicly. It is not maintained and is kept here as a record.
+
 The serverless backend of zScrap's AI web-scraping API, built in September and October 2024. You give it a URL and a plain-English request, optionally with a JSON schema. It renders the page, cleans the HTML, and has GPT-4o-mini return the data as structured JSON.
 
 ## How the two repos worked together
